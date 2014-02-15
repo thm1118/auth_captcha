@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+ <t t-extend="Login">
+        <t t-jquery="form ul:first li:has(input[name=password])" t-operation="after">
+            <li>验证码</li>
+            <li width="60px"><input name="turing_number" type="text" value="" width="60px" maxlength="4" autocomplete="off"/>
+            <div><img class="oe_login_captcha"  width="80px" hint="点击切换验证码"/></div>
+                <input type="hidden" name="challenge_code" value=""/>
+            </li>
+        </t>
+ </t>
+</templates>
