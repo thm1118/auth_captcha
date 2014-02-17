@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name': "Authentication with captcha",
-    'version' : "0.1",
+    'version' : "0.2",
     'author': "Tiger",
     'website' : "https://github.com/thm1118/",
     "license": "AGPL-3",

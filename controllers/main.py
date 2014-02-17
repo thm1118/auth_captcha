@@ -31,6 +31,7 @@ import StringIO
 from time import time
 from wheezy.core.uuid import shrink_uuid
 from uuid import uuid4
+from openerp import pooler
 
 _logger = logging.getLogger(__name__)
 
@@ -58,12 +59,12 @@ class CaptchaController(oeweb.Controller):
         if not cache.set(captcha_con['prefix'] + challenge_code, (int(time()), turing_number),
                          captcha_con['timeout'], captcha_con['namespace']):
             image_data = self.placeholder(req, 'logo.png')
-
-        image_captcha = captcha_image(turing_number)
-        output = StringIO.StringIO()
-        image_captcha.save(output, "JPEG")
-        image_data = output.getvalue()
-        output.close()
+        else:
+            image_captcha = captcha_image(turing_number)
+            output = StringIO.StringIO()
+            image_captcha.save(output, "JPEG")
+            image_data = output.getvalue()
+            output.close()
 
         headers = [
             ('Content-Type', 'image/jpg'),
@@ -77,13 +78,20 @@ class CaptchaController(oeweb.Controller):
         return open(os.path.join(addons_path, 'web', 'static', 'src', 'img', image), 'rb').read()
 
 
+
+
+
+
 class Captcha_Session(Session):
     @openerp.addons.web.http.jsonrequest
-    def authenticate(self, req, db, login, password, challenge_code, turing_number, base_location=None):
-        return self.validate(challenge_code, turing_number) and \
+    def authenticate(self, req, db, login, password, challenge_code=None, turing_number=None, base_location=None):
+        return self.validate(db, challenge_code, turing_number) and \
                Session.authenticate(self, req, db, login, password, base_location)
 
-    def validate(self, challenge_code, turing_number):
+    def validate(self, db, challenge_code, turing_number):
+        #判断模块是否安装：如果未安装，则直接验证通过。
+        if not self.auth_captcha_is_installed(db):
+            return True
         if not captcha_con['enabled']:
             return False
 
@@ -104,10 +112,24 @@ class Captcha_Session(Session):
         cache.delete(key, 0, captcha_con['namespace'])
         issued, turing_number_cache = data
         if issued + captcha_con['wait_timeout'] > int(time()):
-           # 验证码录入太快，超过预设的 captcha_con.wait_timeout 2秒。
+            # 验证码录入太快，超过预设的 captcha_con.wait_timeout 2秒。
             return False
         if turing_number_cache != turing_number.upper():
             return False
         return True
+
+    def auth_captcha_is_installed(self, db):
+        cr = pooler.get_db(db).cursor()
+        try:
+            cr.execute("SELECT id FROM ir_module_module WHERE name='auth_captcha' and state='installed'")
+            module_id = cr.fetchone()
+        except openerp.exceptions:
+            _logger.info("获取验证码模块是否已安装，查询失败!",exc_info=True)
+        finally:
+            cr.close()
+
+        return module_id
+
+
 
 # vim:expandtab:tabstop=4:softtabstop=4:shiftwidth=4:
