@@ -25,9 +25,10 @@
     'website' : "https://github.com/thm1118/",
     "license": "AGPL-3",
     'category': "Tools",
+    'images': ['images/screenshot.jpg', ],
     'description': """
 OpenERP module :authenticate with captcha
-
+===============================================
 OpenERP7 模块，登陆时使用验证码。
 
 与已有的web_recapcha不同的是，web_recapcha使用的是google recpcha验证云服务，
