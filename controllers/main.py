@@ -85,37 +85,44 @@ class CaptchaController(oeweb.Controller):
 class Captcha_Session(Session):
     @openerp.addons.web.http.jsonrequest
     def authenticate(self, req, db, login, password, challenge_code=None, turing_number=None, base_location=None):
-        return self.validate(db, challenge_code, turing_number) and \
+        return self.validate(db, login, challenge_code, turing_number) and \
                Session.authenticate(self, req, db, login, password, base_location)
 
-    def validate(self, db, challenge_code, turing_number):
+    def validate(self, db, login, challenge_code, turing_number):
         #判断模块是否安装：如果未安装，则直接验证通过。
         if not self.auth_captcha_is_installed(db):
+            _logger.info(u"数据库'"+db+u"'未安装验证码，跳过验证！")
             return True
         if not captcha_con['enabled']:
             return False
 
         if not challenge_code or not turing_number:
+            _logger.warning(u"用户'"+login+u"'challenge_code或turing_number为空，验证失败！")
             return False
 
         if len(challenge_code) != 22:
+            _logger.warning(u"用户'"+login+u"'challenge_code长度不等于22，验证失败！")
             return False
 
         if len(turing_number) != captcha_con['max_chars']:
+            _logger.warning(u"用户'"+login+u"'turing_number长度不等于"+captcha_con['max_chars']+u"，验证失败！")
             return False
 
         key = captcha_con['prefix'] + challenge_code
         data = cache.get(key, captcha_con['namespace'])
         if not data:
-            #超时
+            _logger.warning(u"用户'"+login+u"'缓存内未找到对应验证码，验证失败")
             return False
         cache.delete(key, 0, captcha_con['namespace'])
         issued, turing_number_cache = data
         if issued + captcha_con['wait_timeout'] > int(time()):
-            # 验证码录入太快，超过预设的 captcha_con.wait_timeout 2秒。
+            _logger.warning(u"用户'"+login+u"'验证码录入太快，少于预设的wait_timeout："+captcha_con['wait_timeout']+u"秒，验证失败！")
             return False
         if turing_number_cache != turing_number.upper():
+            _logger.warning(u"用户'"+login+u"'提交的验证码--'"+turing_number.upper()+u"'不等于应提供的--'"+turing_number_cache+"'")
             return False
+
+        _logger.info(u"用户'"+login+u"'验证码通过")
         return True
 
     def auth_captcha_is_installed(self, db):
@@ -124,7 +131,7 @@ class Captcha_Session(Session):
             cr.execute("SELECT id FROM ir_module_module WHERE name='auth_captcha' and state='installed'")
             module_id = cr.fetchone()
         except openerp.exceptions:
-            _logger.info("获取验证码模块是否已安装，查询失败!",exc_info=True)
+            _logger.info(u"获取验证码模块是否已安装，查询失败!",exc_info=True)
         finally:
             cr.close()
 
