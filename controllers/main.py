@@ -60,6 +60,9 @@ class CaptchaController(oeweb.Controller):
                          captcha_con['timeout'], captcha_con['namespace']):
             image_data = self.placeholder(req, 'logo.png')
         else:
+            _logger.warning(u"验证码缓存增加：key="+captcha_con['prefix'] + challenge_code+u",value=("+
+                         str(int(time()))+u","+turing_number+u"),timeout="+str(captcha_con['timeout'])+
+                         u",namesapce="+captcha_con['namespace'])
             image_captcha = captcha_image(turing_number)
             output = StringIO.StringIO()
             image_captcha.save(output, "JPEG")
@@ -111,7 +114,7 @@ class Captcha_Session(Session):
         key = captcha_con['prefix'] + challenge_code
         data = cache.get(key, captcha_con['namespace'])
         if not data:
-            _logger.warning(u"用户'"+login+u"'缓存内未找到对应验证码，验证失败")
+            _logger.warning(u"用户'"+login+u"'缓存内未找到key='"+key+u"'对应验证码，验证失败")
             return False
         cache.delete(key, 0, captcha_con['namespace'])
         issued, turing_number_cache = data

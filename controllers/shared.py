@@ -52,7 +52,7 @@ captcha_image = captcha(drawings=[
 ])
 
 captcha_con = {
-    'prefix': 'captcha:', 'namespace': None,
+    'prefix': 'captcha:', 'namespace': 'www.example.com',
     'timeout': 300, 'profile': None,
     'chars': 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
     'max_chars': 4, 'wait_timeout': 2,
