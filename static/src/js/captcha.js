@@ -57,7 +57,7 @@ openerp.auth_captcha = function(instance) {
             }, function () {
                 self.$(".oe_login_pane").fadeIn("fast", function() {
                     self.show_error(_t("用户名，密码或验证码错误！"));
-                    return self.get_challenge_code(self);
+                    return self.get_challenge_code();
                 });
             });
         }

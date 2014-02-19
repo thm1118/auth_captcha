@@ -108,7 +108,7 @@ class Captcha_Session(Session):
             return False
 
         if len(turing_number) != captcha_con['max_chars']:
-            _logger.warning(u"用户'"+login+u"'turing_number长度不等于"+captcha_con['max_chars']+u"，验证失败！")
+            _logger.warning(u"用户'"+login+u"'turing_number长度不等于"+str(captcha_con['max_chars'])+u"，验证失败！")
             return False
 
         key = captcha_con['prefix'] + challenge_code
@@ -119,7 +119,7 @@ class Captcha_Session(Session):
         cache.delete(key, 0, captcha_con['namespace'])
         issued, turing_number_cache = data
         if issued + captcha_con['wait_timeout'] > int(time()):
-            _logger.warning(u"用户'"+login+u"'验证码录入太快，少于预设的wait_timeout："+captcha_con['wait_timeout']+u"秒，验证失败！")
+            _logger.warning(u"用户'"+login+u"'验证码录入太快，少于预设的wait_timeout："+str(captcha_con['wait_timeout'])+u"秒，验证失败！")
             return False
         if turing_number_cache != turing_number.upper():
             _logger.warning(u"用户'"+login+u"'提交的验证码--'"+turing_number.upper()+u"'不等于应提供的--'"+turing_number_cache+"'")
