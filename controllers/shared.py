@@ -49,7 +49,7 @@ captcha_con = {
 
 class WrapperRedis(object):
     def __init__(self):
-        _logger.info(u"使用Redis")
+        _logger.debug(u"使用Redis")
         self.r = redis.StrictRedis(host=captcha_con['redis_server'],
                                    port=captcha_con['redis_server_port'], password=captcha_con['redis_password'], db=0)
 
@@ -62,29 +62,29 @@ class WrapperRedis(object):
         lvalue[0] = str(lvalue[0])
         lvalue[2] = str(lvalue[2])
         wrap_value = ','.join(lvalue)
-        _logger.info(u"redis设置：key="+key+u",value="+wrap_value)
+        _logger.debug(u"redis设置：key="+key+u",value="+wrap_value)
         return self.r.set(key, wrap_value)
 
     def get(self, key, namespace=None):
         wrap_value = self.r.get(key)
         if wrap_value:
-            _logger.info(u"redis获取：key="+key+u",wrap_value="+wrap_value)
+            _logger.debug(u"redis获取：key="+key+u",wrap_value="+wrap_value)
             lvalue = wrap_value.split(',')
             time = int(lvalue[2])
             value = lvalue[:2]
-            _logger.info(u"redis获取：key="+key+u",value="+','.join(value))
+            _logger.debug(u"redis获取：key="+key+u",value="+','.join(value))
             value[0] = int(value[0])
             now = int(unixtime())
 
             if now < time:
                 return value
             else:
-                _logger.info(u"redis：key="+key+u",时间超时，清除")
+                _logger.debug(u"redis：key="+key+u",时间超时，清除")
                 self.r.delete(key)
         return None
 
     def delete(self, key, seconds=0, namespace=None):
-        _logger.info(u"redis：key="+key+u"被清除")
+        _logger.debug(u"redis：key="+key+u"被清除")
         return self.r.delete(key)
 
 if config['workers']:

@@ -90,7 +90,6 @@ class MemoryCache(object):
         self.expire_buckets = [
             (allocate_lock(), []) for i in xrange(0, buckets)]
         self.last_expire_bucket_id = -1
-        _logger.warning(u"创建MemoryCache：")
 
     def set(self, key, value, time=0, namespace=None):
         """ Sets a key's value, regardless of previous contents
@@ -262,7 +261,6 @@ class MemoryCache(object):
             try:
                 entry = items[key]
                 del items[key]
-                _logger.warning(u"缓存删除key："+key+u",entry.expires:"+str(entry.expires)+u">=now:"+str(now))
                 if entry.expires < now:
                     return False
                 return True
@@ -294,7 +292,6 @@ class MemoryCache(object):
             for key in keys:
                 try:
                     del items[key_prefix + key]
-                    _logger.warning(u"缓存删除delete_multi :"+key_prefix + key)
                 except KeyError:
                     pass
         finally:
@@ -332,7 +329,6 @@ class MemoryCache(object):
                 if entry.expires < now:
                     del items[key]
                     entry = None
-                    _logger.warning(u"缓存删除key："+key+u",entry.expires:"+str(entry.expires)+u">=now:"+str(now))
             except KeyError:
                     entry = None
             if entry is None:
@@ -391,7 +387,6 @@ class MemoryCache(object):
             try:
                 entry = items[key]
                 if entry.expires < now:
-                    _logger.warning(u"缓存删除key："+key+u",entry.expires:"+str(entry.expires)+u">=now:"+str(now))
                     del items[key]
                 elif op == 1:  # add
                     return False
@@ -447,7 +442,6 @@ class MemoryCache(object):
                 try:
                     entry = items[key]
                     if entry.expires < now:
-                        _logger.warning(u"缓存删除key："+key+u",entry.expires:"+str(entry.expires)+u">=now:"+str(now))
                         del items[key]
                     elif op == 1:  # add
                         keys_failed.append(k)
@@ -492,7 +486,6 @@ class MemoryCache(object):
             for bucket_lock, bucket_items in self.expire_buckets:
                 bucket_lock.acquire(1)
                 try:
-                    _logger.warning(u"缓存删除key全部")
                     del bucket_items[:]
                 finally:
                     bucket_lock.release()
